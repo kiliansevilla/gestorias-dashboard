@@ -608,6 +608,7 @@
             <th>Contacto</th>
             <th>Email</th>
             <th>Status</th>
+            <th>Modelo</th>
             <th>Pipeline</th>
             <th>Respuesta</th>
             <th>Última Acción</th>
@@ -1091,10 +1092,34 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
     // ============================================================
     // CONFIG — reemplaza estos valores después de configurar Apps Script
     // ============================================================
-    const BACKEND_URL       = 'https://script.google.com/macros/s/AKfycbzRUkQHyuPwCTtXOYqVUg4llXdaSUOHNeYAXupa0EUqNcqvKyekxj_vDP82ovHuyG7Z/exec';
-    const TOKEN             = 'gestoria2026';
-    const PIN               = '2612';
-    const PIPELINE_MRR_M1   = 350;  // Agente 1 — €350/mes
+    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzRUkQHyuPwCTtXOYqVUg4llXdaSUOHNeYAXupa0EUqNcqvKyekxj_vDP82ovHuyG7Z/exec';
+    const TOKEN       = 'gestoria2026';
+    const PIN         = '2612';
+
+    const MODELOS = {
+      'M1': { label: 'Agente 1 — Docs',    setup: 2500, mrr: 350 },
+      'M2': { label: 'Agente 2 — Plazos',  setup: 2500, mrr: 500 },
+      'M3': { label: 'Agente 3 — Onboard', setup: 1500, mrr: 250 },
+      'BU': { label: 'Bundle 3 agentes',   setup: 5000, mrr: 900 },
+    };
+
+    // JSONP fetch — resuelve el bloqueo CORS de Apps Script
+    function fetchJsonp(url) {
+      return new Promise((resolve, reject) => {
+        const cb = 'cb_' + Date.now();
+        const script = document.createElement('script');
+        const timer = setTimeout(() => { cleanup(); reject(new Error('Timeout')); }, 12000);
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[cb];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+        window[cb] = (data) => { cleanup(); resolve(data); };
+        script.onerror = () => { cleanup(); reject(new Error('Failed to fetch')); };
+        script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+        document.head.appendChild(script);
+      });
+    }
 
     // ---- PIN PROTECTION ----
     function checkPin() {
@@ -1174,10 +1199,7 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       if (BACKEND_CONFIGURED) {
         try {
           setSyncStatus('syncing');
-          const res = await fetch(`${BACKEND_URL}?token=${TOKEN}`, {
-            signal: AbortSignal.timeout(6000)
-          });
-          const remote = await res.json();
+          const remote = await fetchJsonp(`${BACKEND_URL}?token=${TOKEN}`);
           if (remote && Array.isArray(remote.leads)) {
             Object.assign(appData, remote);
             localStorage.setItem('appData', JSON.stringify(appData));
@@ -1268,10 +1290,7 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       }
       setSyncStatus('syncing');
       try {
-        const res = await fetch(`${BACKEND_URL}?token=${TOKEN}&action=import`, {
-          signal: AbortSignal.timeout(10000)
-        });
-        const json = await res.json();
+        const json = await fetchJsonp(`${BACKEND_URL}?token=${TOKEN}&action=import`);
         if (!json.leads || !Array.isArray(json.leads)) {
           alert('No se encontraron leads en la pestaña "Prospectos".');
           setSyncStatus('ok');
@@ -1303,6 +1322,11 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       document.getElementById('lead-phone').value = '';
       document.getElementById('lead-zona').value = '';
       document.getElementById('lead-channel').value = '';
+    }
+
+    function changeLeadModel(leadId, newModel) {
+      const lead = appData.leads.find(l => l.id === leadId);
+      if (lead) { lead.model = newModel; saveData(); renderLeads(); }
     }
 
     function changeLeadStatus(leadId, newStatus) {
@@ -1394,16 +1418,27 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
           'lost': 'badge-lost'
         };
 
-        const pipelineVal = lead.status === 'lost' ? 0 : PIPELINE_MRR_M1;
-        const pipelineHtml = lead.status === 'lost'
+        const modelo     = MODELOS[lead.model] || MODELOS['M1'];
+        const isLost     = lead.status === 'lost';
+        const modelOpts  = Object.entries(MODELOS).map(([k, v]) =>
+          `<option value="${k}" ${(lead.model || 'M1') === k ? 'selected' : ''}>${v.label}</option>`
+        ).join('');
+        const pipelineHtml = isLost
           ? '<span style="color:var(--gray)">—</span>'
-          : `<span style="font-weight:600;color:var(--green)">€${pipelineVal}/mes</span>`;
+          : `<span style="font-weight:600;color:var(--green)">€${modelo.mrr}/mes</span>
+             <div style="font-size:11px;color:var(--gray)">+€${modelo.setup.toLocaleString('es-ES')} setup</div>
+             <div style="font-size:11px;color:var(--gray)">Año 1: €${(modelo.mrr*12+modelo.setup).toLocaleString('es-ES')}</div>`;
 
         row.innerHTML = `
           <td>${lead.despacho}</td>
           <td>${lead.contacto}</td>
           <td>${lead.email}</td>
           <td><span class="badge ${statusColor[lead.status]}">${lead.status}</span></td>
+          <td>
+            <select onchange="changeLeadModel(${lead.id}, this.value)" style="padding:4px 6px;font-size:11px;max-width:140px;">
+              ${modelOpts}
+            </select>
+          </td>
           <td>${pipelineHtml}</td>
           <td>${lead.replied ? '✓ Sí' : 'Pendiente'}</td>
           <td>${lead.lastAction}</td>
@@ -1640,10 +1675,11 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       const trialLeads = appData.leads.filter(l => l.status === 'trial').length;
       const customers = appData.leads.filter(l => l.status === 'customer').length;
 
-      const activeLeads  = appData.leads.filter(l => l.status !== 'lost').length;
-      const replyRate    = totalLeads > 0 ? Math.round((repliedLeads / totalLeads) * 100) : 0;
-      const mrr          = customers * PIPELINE_MRR_M1;
-      const pipelineValue = activeLeads * PIPELINE_MRR_M1;
+      const replyRate     = totalLeads > 0 ? Math.round((repliedLeads / totalLeads) * 100) : 0;
+      const activeLeads   = appData.leads.filter(l => l.status !== 'lost');
+      const pipelineValue = activeLeads.reduce((sum, l) => sum + (MODELOS[l.model] || MODELOS['M1']).mrr, 0);
+      const mrr           = appData.leads.filter(l => l.status === 'customer')
+                              .reduce((sum, l) => sum + (MODELOS[l.model] || MODELOS['M1']).mrr, 0);
 
       return {
         totalLeads,
