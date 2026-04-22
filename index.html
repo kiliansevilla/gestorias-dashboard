@@ -608,6 +608,7 @@
             <th>Contacto</th>
             <th>Email</th>
             <th>Status</th>
+            <th>Pipeline</th>
             <th>Respuesta</th>
             <th>Última Acción</th>
             <th>Acciones</th>
@@ -1090,9 +1091,10 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
     // ============================================================
     // CONFIG — reemplaza estos valores después de configurar Apps Script
     // ============================================================
-    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzRUkQHyuPwCTtXOYqVUg4llXdaSUOHNeYAXupa0EUqNcqvKyekxj_vDP82ovHuyG7Z/exec';
-    const TOKEN       = 'gestoria2026';
-    const PIN         = '2612'; // cambia esto
+    const BACKEND_URL       = 'https://script.google.com/macros/s/AKfycbzRUkQHyuPwCTtXOYqVUg4llXdaSUOHNeYAXupa0EUqNcqvKyekxj_vDP82ovHuyG7Z/exec';
+    const TOKEN             = 'gestoria2026';
+    const PIN               = '2612';
+    const PIPELINE_MRR_M1   = 350;  // Agente 1 — €350/mes
 
     // ---- PIN PROTECTION ----
     function checkPin() {
@@ -1392,11 +1394,17 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
           'lost': 'badge-lost'
         };
 
+        const pipelineVal = lead.status === 'lost' ? 0 : PIPELINE_MRR_M1;
+        const pipelineHtml = lead.status === 'lost'
+          ? '<span style="color:var(--gray)">—</span>'
+          : `<span style="font-weight:600;color:var(--green)">€${pipelineVal}/mes</span>`;
+
         row.innerHTML = `
           <td>${lead.despacho}</td>
           <td>${lead.contacto}</td>
           <td>${lead.email}</td>
           <td><span class="badge ${statusColor[lead.status]}">${lead.status}</span></td>
+          <td>${pipelineHtml}</td>
           <td>${lead.replied ? '✓ Sí' : 'Pendiente'}</td>
           <td>${lead.lastAction}</td>
           <td class="actions-cell">
@@ -1632,9 +1640,10 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       const trialLeads = appData.leads.filter(l => l.status === 'trial').length;
       const customers = appData.leads.filter(l => l.status === 'customer').length;
 
-      const replyRate = totalLeads > 0 ? Math.round((repliedLeads / totalLeads) * 100) : 0;
-      const mrr = customers * 900; // Bundle promedio
-      const pipelineValue = (trialLeads * 900 * 0.2) + (appData.leads.filter(l => l.status === 'new' || l.status === 'contacted').length * 900 * 0.05);
+      const activeLeads  = appData.leads.filter(l => l.status !== 'lost').length;
+      const replyRate    = totalLeads > 0 ? Math.round((repliedLeads / totalLeads) * 100) : 0;
+      const mrr          = customers * PIPELINE_MRR_M1;
+      const pipelineValue = activeLeads * PIPELINE_MRR_M1;
 
       return {
         totalLeads,
