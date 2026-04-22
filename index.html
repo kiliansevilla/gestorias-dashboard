@@ -551,7 +551,8 @@
 
       <div style="background: var(--light); padding: 20px; border-radius: 6px; margin-bottom: 24px;">
         <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
-          <button onclick="document.getElementById('csv-input').click()">📥 Subir CSV</button>
+          <button onclick="importFromSheets()">☁️ Importar desde Sheets</button>
+          <button class="secondary" onclick="document.getElementById('csv-input').click()">📥 Subir CSV</button>
           <input type="file" id="csv-input" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
           <button class="secondary" onclick="downloadTemplate()">📄 Descargar Template</button>
         </div>
@@ -1256,6 +1257,41 @@ Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
       clearLeadForm();
       saveData();
       renderLeads();
+    }
+
+    async function importFromSheets() {
+      if (!BACKEND_CONFIGURED) {
+        alert('Backend no configurado. Añade la URL del Apps Script primero.');
+        return;
+      }
+      setSyncStatus('syncing');
+      try {
+        const res = await fetch(`${BACKEND_URL}?token=${TOKEN}&action=import`, {
+          signal: AbortSignal.timeout(10000)
+        });
+        const json = await res.json();
+        if (!json.leads || !Array.isArray(json.leads)) {
+          alert('No se encontraron leads en la pestaña "Prospectos".');
+          setSyncStatus('ok');
+          return;
+        }
+
+        // Merge: los del Sheets se añaden solo si el email no existe ya
+        const existingEmails = new Set(appData.leads.map(l => l.email.toLowerCase()).filter(Boolean));
+        const newLeads = json.leads.filter(l => {
+          if (!l.email) return true; // sin email: siempre añadir
+          return !existingEmails.has(l.email.toLowerCase());
+        });
+
+        appData.leads = [...appData.leads, ...newLeads];
+        saveData();
+        renderLeads();
+        setSyncStatus('ok');
+        alert(`✓ ${newLeads.length} leads importados. ${json.leads.length - newLeads.length} duplicados ignorados.`);
+      } catch(err) {
+        setSyncStatus('offline');
+        alert('Error al importar: ' + err.message);
+      }
     }
 
     function clearLeadForm() {
