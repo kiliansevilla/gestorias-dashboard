@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Room — Solución IA Gestorías</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #fafafa;
+      --gray: #6b6b6b;
+      --light: #f2f2f0;
+      --accent: #0a0a0a;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --border: #e0e0e0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--white);
+      color: var(--black);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .nav-logo {
+      height: 32px;
+      width: auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-logo img {
+      height: 100%;
+      width: auto;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      color: var(--gray);
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover { color: var(--black); }
+    .nav-tab.active { color: var(--black); border-color: var(--black); }
+
+    /* MAIN */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* DASHBOARD KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 6px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .kpi-detail {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 8px;
+    }
+
+    /* PROGRESS BARS */
+    .progress-bar {
+      background: var(--light);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      background: var(--green);
+      height: 100%;
+      transition: width 0.3s;
+    }
+
+    /* FORM ELEMENTS */
+    input, select, textarea {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--white);
+      color: var(--black);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--black);
+      box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.05);
+    }
+
+    button {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border: 1px solid var(--black);
+      border-radius: 4px;
+      background: var(--black);
+      color: var(--white);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    button.secondary {
+      border-color: var(--border);
+      background: var(--white);
+      color: var(--black);
+    }
+
+    button.secondary:hover {
+      background: var(--light);
+    }
+
+    button.danger {
+      border-color: var(--red);
+      background: var(--white);
+      color: var(--red);
+    }
+
+    button.danger:hover {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    /* TABLES */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    thead {
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:hover td {
+      background: var(--light);
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-new { background: #fef3c7; color: #92400e; }
+    .badge-contacted { background: #f3f4f6; color: #4b5563; }
+    .badge-trial { background: #fef3c7; color: #92400e; }
+    .badge-customer { background: #d1fae5; color: #065f46; }
+    .badge-lost { background: #fee2e2; color: #991b1b; }
+    .badge-sent { background: #dbeafe; color: #0c2d6b; }
+    .badge-replied { background: #d1fae5; color: #065f46; }
+    .badge-unsubscribed { background: #fee2e2; color: #991b1b; }
+
+    /* SECTIONS */
+    .section-header {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--black);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--black);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .actions-cell button {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    /* ADS SECTION */
+    .ads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .ad-card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      padding: 20px;
+      border-radius: 6px;
+    }
+
+    .ad-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--black);
+    }
+
+    .ad-example {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .ad-example-label {
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+
+    /* CHECKLIST */
+    .checklist-section {
+      margin-bottom: 32px;
+    }
+
+    .checklist-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      color: var(--black);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: var(--light);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .checklist-item input {
+      margin-right: 12px;
+      cursor: pointer;
+    }
+
+    .checklist-item.completed {
+      opacity: 0.6;
+    }
+
+    .checklist-item.completed label {
+      text-decoration: line-through;
+    }
+
+    .checklist-item label {
+      cursor: pointer;
+      flex: 1;
+    }
+
+    /* FEEDBACK */
+    .feedback-list {
+      margin-top: 16px;
+    }
+
+    .feedback-item {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue);
+      padding: 16px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .feedback-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .feedback-date {
+      font-size: 11px;
+      color: var(--gray);
+      font-weight: 600;
+    }
+
+    .feedback-text {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .feedback-lead {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray);
+    }
+
+    /* UTILITY */
+    .mt-2 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 16px; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--gray); }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+    @media (max-width: 768px) {
+      nav { flex-direction: column; gap: 16px; }
+      .nav-left { flex-direction: column; gap: 16px; width: 100%; }
+      .nav-tabs { gap: 16px; }
+      .nav-tab { font-size: 10px; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .ads-grid { grid-template-columns: 1fr; }
+      main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg viewBox="0 0 320 60" xmlns="http://www.w3.org/2000/svg" style="width: 180px; height: 34px;">
+          <!-- DONT CALL text thin left -->
+          <text x="2" y="22" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="300" fill="#0a0a0a" letter-spacing="1">DONT</text>
+          <text x="2" y="34" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="300" fill="#0a0a0a" letter-spacing="1">CALL</text>
+          <!-- MAMA bold right -->
+          <text x="46" y="48" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="800" fill="#0a0a0a" letter-spacing="-2">MAMA</text>
+        </svg>
+      </div>
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('dashboard', this)">Dashboard</div>
+        <div class="nav-tab" onclick="switchTab('leads', this)">Leads</div>
+        <div class="nav-tab" onclick="switchTab('clientes', this)">Clientes</div>
+        <div class="nav-tab" onclick="switchTab('pipeline', this)">Pipeline</div>
+        <div class="nav-tab" onclick="switchTab('emails', this)">Emails</div>
+        <div class="nav-tab" onclick="switchTab('progreso', this)">Progreso</div>
+        <div class="nav-tab" onclick="switchTab('ads', this)">Ads</div>
+        <div class="nav-tab" onclick="switchTab('feedbacks', this)">Feedbacks</div>
+        <div class="nav-tab" onclick="switchTab('copys', this)">Copys</div>
+      </div>
+    </div>
+    <div id="sync-status" title="Sin configurar" style="font-size:18px;line-height:1;color:var(--gray);cursor:default;flex-shrink:0;">●</div>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+      <div class="section-header">Dashboard</div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Leads</div>
+          <div class="kpi-value" id="kpi-leads">0</div>
+          <div class="kpi-detail" id="kpi-leads-detail"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Reply Rate</div>
+          <div class="kpi-value" id="kpi-reply">0%</div>
+          <div class="kpi-detail" id="kpi-reply-detail"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active Trials</div>
+          <div class="kpi-value" id="kpi-trials">0</div>
+          <div class="kpi-detail" id="kpi-trials-detail"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Customers (MRR)</div>
+          <div class="kpi-value" id="kpi-mrr">€0</div>
+          <div class="kpi-detail" id="kpi-mrr-detail"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pipeline Estimate</div>
+          <div class="kpi-value" id="kpi-pipeline">€0</div>
+          <div class="kpi-detail" id="kpi-pipeline-detail"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg CAC</div>
+          <div class="kpi-value" id="kpi-cac">€0</div>
+          <div class="kpi-detail" id="kpi-cac-detail"></div>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <div class="section-header" style="margin-top: 32px;">Progreso Proyecto</div>
+        <div style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-weight: 600;">Completado</span>
+            <span id="overall-pct" style="color: var(--gray);">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="overall-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+          <div>
+            <div style="font-weight: 600; margin-bottom: 8px;">Validación (S1-2)</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="phase1-fill" style="width: 0%"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--gray); margin-top: 6px;" id="phase1-pct">0%</div>
+          </div>
+          <div>
+            <div style="font-weight: 600; margin-bottom: 8px;">Adquisición (S3-12)</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="phase2-fill" style="width: 0%"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--gray); margin-top: 6px;" id="phase2-pct">0%</div>
+          </div>
+          <div>
+            <div style="font-weight: 600; margin-bottom: 8px;">Pilotos (S5-8)</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="phase3-fill" style="width: 0%"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--gray); margin-top: 6px;" id="phase3-pct">0%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEADS -->
+    <section id="leads" class="section">
+      <div class="section-header">Leads</div>
+
+      <div style="background: var(--light); padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+        <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+          <button onclick="document.getElementById('csv-input').click()">📥 Subir CSV</button>
+          <input type="file" id="csv-input" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+          <button class="secondary" onclick="downloadTemplate()">📄 Descargar Template</button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Despacho</label>
+            <input type="text" id="lead-despacho" placeholder="Nombre despacho">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contacto</label>
+            <input type="text" id="lead-contacto" placeholder="Nombre contacto">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="lead-email" placeholder="email@example.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="tel" id="lead-phone" placeholder="Teléfono">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Zona</label>
+            <select id="lead-zona">
+              <option value="">Seleccionar...</option>
+              <option value="Barcelona">Barcelona</option>
+              <option value="Madrid">Madrid</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Canal</label>
+            <select id="lead-channel">
+              <option value="">Seleccionar...</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Google">Google</option>
+              <option value="Meta">Meta</option>
+              <option value="Referral">Referral</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="addLead()">+ Añadir Lead</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Despacho</th>
+            <th>Contacto</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Respuesta</th>
+            <th>Última Acción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="leads-table">
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="clientes" class="section">
+      <div class="section-header">Clientes</div>
+      <div style="background: var(--light); padding: 40px; text-align: center; border-radius: 6px;">
+        <p style="color: var(--gray); margin-bottom: 12px;">Sin clientes aún. Los primeros pilotos cerrarán en semanas 5-8.</p>
+        <p style="font-size: 12px; color: var(--gray);">Cuando cierres leads, aparecerán aquí con su plan (Agente 1, 2, 3 o Bundle) y MRR.</p>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section id="pipeline" class="section">
+      <div class="section-header">Pipeline</div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px;">
+        <div style="background: var(--light); padding: 16px; border-radius: 6px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">Nuevos</div>
+          <div style="font-size: 24px; font-weight: 700;" id="pipeline-new">0</div>
+          <div style="font-size: 12px; color: var(--gray); margin-top: 4px;">€0 potencial</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">En Trial (14d)</div>
+          <div style="font-size: 24px; font-weight: 700;" id="pipeline-trial">0</div>
+          <div style="font-size: 12px; color: var(--gray); margin-top: 4px;">€0 conversión 20%</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">Cerrados</div>
+          <div style="font-size: 24px; font-weight: 700;" id="pipeline-closed">0</div>
+          <div style="font-size: 12px; color: var(--gray); margin-top: 4px;">€0 MRR confirmado</div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top: 32px;">Oportunidades por Stage</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Despacho</th>
+            <th>Stage</th>
+            <th>Plan Probable</th>
+            <th>MRR Estimado</th>
+          </tr>
+        </thead>
+        <tbody id="pipeline-table">
+        </tbody>
+      </table>
+    </section>
+
+    <!-- EMAILS -->
+    <section id="emails" class="section">
+      <div class="section-header">Emails</div>
+
+      <div style="background: var(--light); padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Despacho</label>
+            <select id="email-despacho">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select id="email-status">
+              <option value="sent">Enviado</option>
+              <option value="replied">Respondido</option>
+              <option value="unsubscribed">Baja</option>
+              <option value="bounced">Error Entrega</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo Email</label>
+            <select id="email-type">
+              <option value="Email 1 - Apertura">Email 1 - Apertura</option>
+              <option value="Email 2 - Follow-up">Email 2 - Follow-up</option>
+              <option value="Email 3 - Final Push">Email 3 - Final Push</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <textarea id="email-notes" placeholder="Notas adicionales..." style="width: 100%; height: 80px;"></textarea>
+        </div>
+
+        <button onclick="addEmail()">+ Registrar Email</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Total Enviados</div>
+          <div style="font-size: 28px; font-weight: 700;" id="email-sent-count">0</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Respondidos</div>
+          <div style="font-size: 28px; font-weight: 700;" id="email-reply-count">0</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Bajas</div>
+          <div style="font-size: 28px; font-weight: 700;" id="email-unsub-count">0</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Tasa Respuesta</div>
+          <div style="font-size: 28px; font-weight: 700;" id="email-rate">0%</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Despacho</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody id="emails-table">
+        </tbody>
+      </table>
+    </section>
+
+    <!-- PROGRESO -->
+    <section id="progreso" class="section">
+      <div class="section-header">Progreso Ejecución</div>
+      <p style="color: var(--gray); margin-bottom: 24px;">Checklist del plan 90 días. Marca tareas completadas para ver progreso automático.</p>
+
+      <div id="progreso-content"></div>
+    </section>
+
+    <!-- ADS -->
+    <section id="ads" class="section">
+      <div class="section-header">Estrategia Ads por Canal</div>
+
+      <div class="ads-grid">
+        <!-- LINKEDIN -->
+        <div class="ad-card">
+          <div class="ad-card-title">LinkedIn — Outreach Directo</div>
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">Search strings + Direct Message</div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Search String</div>
+            <div>Despacho gestoría Barcelona 50-250 clientes</div>
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Ángulo: Problema Documentación</div>
+            "¿Pierdes horas semanales persiguiendo documentación a clientes? Recupera 20h/mes con nuestro Agente IA. 14d trial gratis."
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Ángulo: Sanciones Fiscales</div>
+            "¿Has pagado sanciones por plazos olvidados? Tu despacho no debería perder €3-5k por negligencia. Automatiza vencimientos."
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div style="font-weight: 600; font-size: 12px; margin-bottom: 6px;">KPIs Mes 3:</div>
+            <div style="font-size: 11px; color: var(--gray);">• 8-12 leads LinkedIn</div>
+            <div style="font-size: 11px; color: var(--gray);">• Ads: €200/mes</div>
+          </div>
+        </div>
+
+        <!-- GOOGLE -->
+        <div class="ad-card">
+          <div class="ad-card-title">Google — SEO + SEM</div>
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">Keyword targeting high-intent</div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Keywords Tier 1 (Alto intent)</div>
+            "automatizar gestoría", "agente ia legal", "software plazos fiscales"
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Ángulo SEM: Automatización</div>
+            "Automatiza documentación + plazos + onboarding. 3 agentes IA para gestorías. Prueba 14 días gratis."
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">SEO Blog Topics (12 posts)</div>
+            "Cómo reducir horas documentación", "Sanciones fiscales 2024", "Onboarding cliente nuevo"
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div style="font-weight: 600; font-size: 12px; margin-bottom: 6px;">KPIs Mes 3:</div>
+            <div style="font-size: 11px; color: var(--gray);">• 12-15 leads Google</div>
+            <div style="font-size: 11px; color: var(--gray);">• SEM: €200/mes</div>
+          </div>
+        </div>
+
+        <!-- META -->
+        <div class="ad-card">
+          <div class="ad-card-title">Meta — Lookalike + Retargeting</div>
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">Audiences B2B profesionales</div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Audience 1: Lookalike</div>
+            Basada en visitas a landing + email clickers
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Ángulo: Eficiencia Operativa</div>
+            "Despachos de 15-30 personas: recupera 20h/mes. Automatización IA para gestorías. Piloto gratis."
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Creative: Carousel (3 agentes)</div>
+            Slide 1: Problem (documentación), Slide 2: Problem (plazos), Slide 3: CTA trial
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div style="font-weight: 600; font-size: 12px; margin-bottom: 6px;">KPIs Mes 3:</div>
+            <div style="font-size: 11px; color: var(--gray);">• 12-15 leads Meta</div>
+            <div style="font-size: 11px; color: var(--gray);">• Ads: €300/mes</div>
+          </div>
+        </div>
+
+        <!-- GENERAL -->
+        <div class="ad-card">
+          <div class="ad-card-title">Partnerships + PR</div>
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">Email marketing + asociaciones</div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Email Nurture Sequence</div>
+            Leads de demo → 3-email sequence (problem, proof, CTA trial)
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Partnerships: Asociaciones</div>
+            Colegios Profesionales Gestores, Consultores Fiscales, Despachos complementarios
+          </div>
+
+          <div class="ad-example">
+            <div class="ad-example-label">Content PR</div>
+            "3 agentes IA que ahorran 20h/mes en gestorías" — target prensa especializada
+          </div>
+
+          <div style="margin-top: 12px;">
+            <div style="font-weight: 600; font-size: 12px; margin-bottom: 6px;">KPIs Mes 3:</div>
+            <div style="font-size: 11px; color: var(--gray);">• 8-12 leads partnerships</div>
+            <div style="font-size: 11px; color: var(--gray);">• Costo: €0 (organic)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: var(--light); padding: 20px; border-radius: 6px; margin-top: 24px;">
+        <div style="font-weight: 600; margin-bottom: 12px;">Resumen: 12-Semana Roadmap</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>LinkedIn</th>
+              <th>Google</th>
+              <th>Meta</th>
+              <th>Partnerships</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1-2</td>
+              <td>Setup</td>
+              <td>Blog setup</td>
+              <td>Audience build</td>
+              <td>Mapping</td>
+            </tr>
+            <tr>
+              <td>3-4</td>
+              <td>Outreach batch 1 (15)</td>
+              <td>SEM launch</td>
+              <td>Ads launch</td>
+              <td>Email sequence</td>
+            </tr>
+            <tr>
+              <td>5-8</td>
+              <td>Outreach batch 2 (30)</td>
+              <td>4 posts publicados</td>
+              <td>Retargeting activo</td>
+              <td>PR outreach</td>
+            </tr>
+            <tr>
+              <td>9-12</td>
+              <td>Optimización ganadores</td>
+              <td>8 posts más + ranking</td>
+              <td>Lookalike x2</td>
+              <td>Partnerships activos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FEEDBACKS -->
+    <section id="feedbacks" class="section">
+      <div class="section-header">Feedbacks — Validación de Pain</div>
+
+      <div style="background: var(--light); padding: 20px; border-radius: 6px; margin-bottom: 24px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Despacho (Lead)</label>
+            <select id="feedback-lead">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo Feedback</label>
+            <select id="feedback-type">
+              <option value="pain-doc">Pain Documentación</option>
+              <option value="pain-plazo">Pain Plazos</option>
+              <option value="pain-onboard">Pain Onboarding</option>
+              <option value="objecion">Objeción</option>
+              <option value="interes">Interés / Positivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Feedback (máx 200 caracteres)</label>
+          <textarea id="feedback-text" placeholder="¿Qué dijo? ¿Cuál fue su reacción?" style="width: 100%; height: 80px; max-height: 200px;"></textarea>
+        </div>
+
+        <button onclick="addFeedback()">+ Registrar Feedback</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Validado (Pain)</div>
+          <div style="font-size: 28px; font-weight: 700; color: var(--green);" id="feedback-pain">0</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Objeciones</div>
+          <div style="font-size: 28px; font-weight: 700; color: var(--red);" id="feedback-objections">0</div>
+        </div>
+        <div style="background: var(--light); padding: 16px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">Interés Positivo</div>
+          <div style="font-size: 28px; font-weight: 700;" id="feedback-positive">0</div>
+        </div>
+      </div>
+
+      <div class="feedback-list" id="feedbacks-list"></div>
+    </section>
+
+    <!-- COPYS -->
+    <section id="copys" class="section">
+      <div class="section-header">Copy Templates</div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+
+        <!-- EMAIL 1 -->
+        <div style="background: var(--light); border: 1px solid var(--border); padding: 24px; border-radius: 6px;">
+          <div style="font-weight: 700; margin-bottom: 4px; font-size: 14px;">Email 1 — Apertura (Día 0)</div>
+          <div style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">Cold. Problem-aware. Ogilvy: información específica, no promesa vacía.</div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
+            <div style="font-weight: 600; color: var(--blue); margin-bottom: 4px;">Subject (A/B):</div>
+            <div style="font-family: monospace;">A: Documentación de clientes — [Nombre de despacho]<br>B: Cada mes, vuestro despacho pierde 20h en esto</div>
+          </div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">Hola [Nombre],
+
+Trabajo con despachos de asesoría de 15-30 personas en [zona].
+
+Un problema que veo en casi todos: los asesores pierden entre 15 y 25 horas al mes persiguiendo documentación a clientes, recordando vencimientos fiscales y estructurando expedientes de entrada.
+
+No es un problema de disciplina. Es un problema de sistema.
+
+Hemos automatizado esos tres procesos con agentes IA específicos para gestorías. Sin cambiar vuestro flujo de trabajo, sin migrar datos.
+
+¿Tiene sentido hablar 15 minutos esta semana?
+
+[Tu nombre]
+[Calendly]</div>
+        </div>
+
+        <!-- EMAIL 2 -->
+        <div style="background: var(--light); border: 1px solid var(--border); padding: 24px; border-radius: 6px;">
+          <div style="font-weight: 700; margin-bottom: 4px; font-size: 14px;">Email 2 — Follow-up (Día 4)</div>
+          <div style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">Kennedy: reason-why. ROI concreto, números que duelen si no actúas.</div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
+            <div style="font-weight: 600; color: var(--blue); margin-bottom: 4px;">Subject (A/B):</div>
+            <div style="font-family: monospace;">A: Lo que cuesta no automatizar esto<br>B: €19.000 anuales en coste invisible</div>
+          </div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">[Nombre],
+
+Los números de un despacho tipo de 20 personas:
+
+— Documentación: 20h/mes × €50 coste asesor = 12.000 €/año en tiempo muerto
+— Sanciones: 2-3 por año × 2.000-5.000 € = hasta 15.000 € en multas evitables
+— Onboarding: 3h por cliente nuevo × 25 clientes/año = 3.750 € en horas no facturables
+
+Total: entre 15.000 y 30.000 €/año que se pierden sin que nadie los contabilice.
+
+Nuestros tres agentes IA atacan exactamente eso. Precio total del bundle: 900 €/mes.
+
+El ROI se recupera en el primer mes de sanciones evitadas.
+
+Trial gratuito de 14 días para que lo comprobéis vosotros.
+
+¿Hablamos?
+[Tu nombre] | [Calendly]</div>
+        </div>
+
+        <!-- EMAIL 3 -->
+        <div style="background: var(--light); border: 1px solid var(--border); padding: 24px; border-radius: 6px;">
+          <div style="font-weight: 700; margin-bottom: 4px; font-size: 14px;">Email 3 — Cierre (Día 9)</div>
+          <div style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">Schwartz: prueba social + escasez real. Último contacto, sin presión artificial.</div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
+            <div style="font-weight: 600; color: var(--blue); margin-bottom: 4px;">Subject (A/B):</div>
+            <div style="font-family: monospace;">A: Último mensaje — [despacho]<br>B: ¿No es el momento o no es el problema?</div>
+          </div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">[Nombre],
+
+Es mi último mensaje, no quiero saturarte.
+
+Solo te dejo esto:
+
+"En las dos primeras semanas el Agente de documentación gestionó 47 recordatorios sin que ningún asesor tocara el teléfono."
+— Responsable de operaciones, despacho 28 personas, Madrid
+
+Si el problema de documentación, plazos u onboarding existe en tu despacho, tiene solución inmediata y con 14 días de prueba sin coste.
+
+Si no es el momento, sin problema. Cuando lo sea, aquí estamos.
+
+[Tu nombre] | [Calendly]</div>
+        </div>
+
+        <!-- LINKEDIN DM -->
+        <div style="background: var(--light); border: 1px solid var(--border); border-left: 4px solid #0077b5; padding: 24px; border-radius: 6px;">
+          <div style="font-weight: 700; margin-bottom: 4px; font-size: 14px;">LinkedIn DM — Primer contacto</div>
+          <div style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">Tras aceptar conexión. Sin venta. Curiosidad + problema específico. Máx 3 líneas.</div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">Hola [Nombre], gracias por conectar.
+
+Trabajo con despachos de asesoría en [zona] automatizando los procesos que más tiempo roban: documentación, vencimientos fiscales y onboarding de cliente nuevo.
+
+¿Es algo que os genera fricción actualmente o ya lo tenéis resuelto?</div>
+
+          <div style="margin-top: 12px; background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">— Si responde SÍ (problema real):
+"Perfecto. ¿15 minutos esta semana para enseñarte cómo funciona? Sin compromiso, es una demo."
+
+— Si responde NO / YA RESUELTO:
+"Interesante, ¿qué usáis? Siempre aprendo algo. Y si en algún momento escala el volumen, aquí estoy."</div>
+        </div>
+
+        <!-- INSTAGRAM DM -->
+        <div style="background: var(--light); border: 1px solid var(--border); border-left: 4px solid #e1306c; padding: 24px; border-radius: 6px;">
+          <div style="font-weight: 700; margin-bottom: 4px; font-size: 14px;">Instagram DM — Primer contacto</div>
+          <div style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">Tono más directo e informal. Referencia a su perfil/contenido. Sin jerga técnica.</div>
+
+          <div style="background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">Hola [Nombre],
+
+Vi que llevas [despacho / gestoría] en [zona].
+
+Pregunta rápida: ¿cuánto tiempo pierde tu equipo al mes persiguiendo documentación a clientes o controlando vencimientos fiscales?
+
+Lo automatizamos con IA. Si quieres te cuento en 10 minutos cómo.</div>
+
+          <div style="margin-top: 12px; background: var(--white); padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap;">— Si muestra interés:
+"Genial. Te mando un enlace para reservar 15 minutos cuando te venga bien: [Calendly]"
+
+— Si no responde (follow-up día 5):
+"[Nombre], ¿pudiste leer el mensaje? Sin prisa, solo quería saber si es algo relevante para ti ahora."</div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ============================================================
+    // CONFIG — reemplaza estos valores después de configurar Apps Script
+    // ============================================================
+    const BACKEND_URL = 'REPLACE_WITH_APPS_SCRIPT_URL';
+    const TOKEN       = 'gestoria2026';
+    const PIN         = '2612'; // cambia esto
+
+    // ---- PIN PROTECTION ----
+    function checkPin() {
+      if (sessionStorage.getItem('dash_auth') === 'ok') return true;
+      const entered = prompt('Dashboard Gestorías — PIN de acceso:');
+      if (String(entered) === String(PIN)) {
+        sessionStorage.setItem('dash_auth', 'ok');
+        return true;
+      }
+      document.body.innerHTML = '<div style="padding:60px;font-family:system-ui;color:#666;text-align:center"><p>Acceso denegado.</p><button onclick="location.reload()" style="margin-top:16px;padding:8px 20px;cursor:pointer">Reintentar</button></div>';
+      return false;
+    }
+
+    // ---- SYNC STATUS ----
+    function setSyncStatus(status) {
+      const el = document.getElementById('sync-status');
+      if (!el) return;
+      const map = {
+        ok:      { color: 'var(--green)',  title: 'Datos sincronizados con Sheets' },
+        syncing: { color: 'var(--yellow)', title: 'Sincronizando...' },
+        offline: { color: 'var(--red)',    title: 'Sin conexión al backend — datos en local' },
+        local:   { color: 'var(--gray)',   title: 'Solo local — configura BACKEND_URL' }
+      };
+      const s = map[status] || map.local;
+      el.style.color = s.color;
+      el.title = s.title;
+    }
+
+    // ============================================================
+    // APP DATA STRUCTURE
+    // ============================================================
+    const appData = {
+      leads: [],
+      emails: [],
+      feedbacks: [],
+      checklist: {
+        'Semanas 1-2: Validación': [
+          { text: 'Buscar 15 despachos target en LinkedIn', done: false },
+          { text: 'Agenda 10 calls (30 min cada una)', done: false },
+          { text: 'Realizar entrevistas + documentar pain', done: false },
+          { text: 'Análisis de resultados', done: false },
+          { text: 'Decisión: GO / CAUTION / STOP', done: false }
+        ],
+        'Semanas 3-4: Setup Adquisición': [
+          { text: 'Setup Google Analytics 4', done: false },
+          { text: 'Crear tracking UTM', done: false },
+          { text: 'Setup LinkedIn outreach automation', done: false },
+          { text: 'Setup Google SEM campaign', done: false },
+          { text: 'Setup Meta audiences', done: false },
+          { text: 'Batch 1 outreach (15 despachos)', done: false }
+        ],
+        'Semanas 5-8: Pilotos': [
+          { text: 'Monitorear trial conversions', done: false },
+          { text: 'Batch 2 outreach (30 despachos)', done: false },
+          { text: 'Publicar 4 blog posts', done: false },
+          { text: 'Webinar/evento planning', done: false },
+          { text: 'Documentar feedback pilotos', done: false },
+          { text: 'Target: 2-3 cierres confirmados', done: false }
+        ],
+        'Semanas 9-12: Scale': [
+          { text: 'Optimizar canales CAC < €500', done: false },
+          { text: 'Duplicar presupuesto en ganadores', done: false },
+          { text: 'Partnerships formales (asociaciones)', done: false },
+          { text: 'Publicar 8 posts más (blog SEO)', done: false },
+          { text: 'PR outreach (prensa especializada)', done: false },
+          { text: 'Target: 40-50 leads, 8-12 trials, 2-3 customers', done: false }
+        ]
+      }
+    };
+
+    // ============================================================
+    // LOAD / SAVE — backend primero, localStorage como fallback
+    // ============================================================
+    const BACKEND_CONFIGURED = BACKEND_URL !== 'REPLACE_WITH_APPS_SCRIPT_URL';
+
+    async function loadData() {
+      if (BACKEND_CONFIGURED) {
+        try {
+          setSyncStatus('syncing');
+          const res = await fetch(`${BACKEND_URL}?token=${TOKEN}`, {
+            signal: AbortSignal.timeout(6000)
+          });
+          const remote = await res.json();
+          if (remote && Array.isArray(remote.leads)) {
+            Object.assign(appData, remote);
+            localStorage.setItem('appData', JSON.stringify(appData));
+            setSyncStatus('ok');
+            return;
+          }
+        } catch(e) {
+          setSyncStatus('offline');
+        }
+      } else {
+        setSyncStatus('local');
+      }
+
+      // Fallback localStorage
+      const stored = localStorage.getItem('appData');
+      if (stored) {
+        try { Object.assign(appData, JSON.parse(stored)); } catch(e) {}
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem('appData', JSON.stringify(appData));
+      updateAllKPIs();
+
+      if (BACKEND_CONFIGURED) {
+        setSyncStatus('syncing');
+        fetch(BACKEND_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify({ token: TOKEN, data: appData })
+        })
+        .then(() => setSyncStatus('ok'))
+        .catch(() => setSyncStatus('offline'));
+      }
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      el.classList.add('active');
+
+      if (tabName === 'progreso') renderProgreso();
+      if (tabName === 'leads') renderLeads();
+      if (tabName === 'pipeline') renderPipeline();
+      if (tabName === 'emails') renderEmails();
+      if (tabName === 'feedbacks') renderFeedbacks();
+    }
+
+    // LEADS
+    function addLead() {
+      const despacho = document.getElementById('lead-despacho').value;
+      const contacto = document.getElementById('lead-contacto').value;
+      const email = document.getElementById('lead-email').value;
+      const phone = document.getElementById('lead-phone').value;
+      const zona = document.getElementById('lead-zona').value;
+      const channel = document.getElementById('lead-channel').value;
+
+      if (!despacho || !contacto || !email) {
+        alert('Completa Despacho, Contacto, Email');
+        return;
+      }
+
+      appData.leads.push({
+        id: Date.now(),
+        despacho,
+        contacto,
+        email,
+        phone,
+        zona,
+        channel,
+        status: 'new',
+        replied: false,
+        lastAction: new Date().toLocaleDateString(),
+        contactCount: 1
+      });
+
+      clearLeadForm();
+      saveData();
+      renderLeads();
+    }
+
+    function clearLeadForm() {
+      document.getElementById('lead-despacho').value = '';
+      document.getElementById('lead-contacto').value = '';
+      document.getElementById('lead-email').value = '';
+      document.getElementById('lead-phone').value = '';
+      document.getElementById('lead-zona').value = '';
+      document.getElementById('lead-channel').value = '';
+    }
+
+    function changeLeadStatus(leadId, newStatus) {
+      const lead = appData.leads.find(l => l.id === leadId);
+      if (lead) {
+        lead.status = newStatus;
+        lead.lastAction = new Date().toLocaleDateString();
+        saveData();
+        renderLeads();
+      }
+    }
+
+    function toggleLeadReply(leadId) {
+      const lead = appData.leads.find(l => l.id === leadId);
+      if (lead) {
+        lead.replied = !lead.replied;
+        lead.lastAction = new Date().toLocaleDateString();
+        saveData();
+        renderLeads();
+      }
+    }
+
+    function incrementContact(leadId) {
+      const lead = appData.leads.find(l => l.id === leadId);
+      if (lead) {
+        lead.contactCount = (lead.contactCount || 1) + 1;
+        lead.lastAction = new Date().toLocaleDateString();
+        saveData();
+        renderLeads();
+      }
+    }
+
+    function handleCSVUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        const headers = lines[0].split(',');
+
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const values = lines[i].split(',');
+          appData.leads.push({
+            id: Date.now() + i,
+            despacho: values[0]?.trim() || '',
+            contacto: values[1]?.trim() || '',
+            email: values[2]?.trim() || '',
+            phone: values[3]?.trim() || '',
+            zona: values[4]?.trim() || '',
+            channel: values[5]?.trim() || 'CSV Import',
+            status: 'new',
+            replied: false,
+            lastAction: new Date().toLocaleDateString(),
+            contactCount: 1
+          });
+        }
+
+        saveData();
+        renderLeads();
+        document.getElementById('csv-input').value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadTemplate() {
+      const csv = 'Despacho,Contacto,Email,Teléfono,Zona,Canal\nEjemplo S.L.,Juan García,juan@example.com,+34912345678,Barcelona,LinkedIn\n';
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'leads-template.csv';
+      a.click();
+    }
+
+    function renderLeads() {
+      const tbody = document.getElementById('leads-table');
+      tbody.innerHTML = '';
+
+      appData.leads.forEach(lead => {
+        const row = document.createElement('tr');
+        const statusColor = {
+          'new': 'badge-new',
+          'contacted': 'badge-contacted',
+          'trial': 'badge-trial',
+          'customer': 'badge-customer',
+          'lost': 'badge-lost'
+        };
+
+        row.innerHTML = `
+          <td>${lead.despacho}</td>
+          <td>${lead.contacto}</td>
+          <td>${lead.email}</td>
+          <td><span class="badge ${statusColor[lead.status]}">${lead.status}</span></td>
+          <td>${lead.replied ? '✓ Sí' : 'Pendiente'}</td>
+          <td>${lead.lastAction}</td>
+          <td class="actions-cell">
+            <select onchange="changeLeadStatus(${lead.id}, this.value)" style="padding: 4px 8px; font-size: 11px;">
+              <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+              <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+              <option value="trial" ${lead.status === 'trial' ? 'selected' : ''}>Trial</option>
+              <option value="customer" ${lead.status === 'customer' ? 'selected' : ''}>Customer</option>
+              <option value="lost" ${lead.status === 'lost' ? 'selected' : ''}>Lost</option>
+            </select>
+            <button class="secondary" onclick="toggleLeadReply(${lead.id})" style="padding: 4px 8px; font-size: 11px;">
+              ${lead.replied ? '✓' : '✉️'}
+            </button>
+            <button class="secondary" onclick="incrementContact(${lead.id})" style="padding: 4px 8px; font-size: 11px;">+1</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      updateLeadSelects();
+    }
+
+    function updateLeadSelects() {
+      const despachos = appData.leads.map(l => l.despacho);
+      const emailSelect = document.getElementById('email-despacho');
+      const feedbackSelect = document.getElementById('feedback-lead');
+
+      [emailSelect, feedbackSelect].forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Seleccionar...</option>';
+        despachos.forEach(d => {
+          const option = document.createElement('option');
+          option.value = d;
+          option.text = d;
+          select.appendChild(option);
+        });
+        select.value = currentValue;
+      });
+    }
+
+    // EMAILS
+    function addEmail() {
+      const despacho = document.getElementById('email-despacho').value;
+      const status = document.getElementById('email-status').value;
+      const type = document.getElementById('email-type').value;
+      const notes = document.getElementById('email-notes').value;
+
+      if (!despacho) {
+        alert('Selecciona un despacho');
+        return;
+      }
+
+      appData.emails.push({
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+        despacho,
+        status,
+        type,
+        notes
+      });
+
+      document.getElementById('email-despacho').value = '';
+      document.getElementById('email-status').value = 'sent';
+      document.getElementById('email-type').value = 'Email 1 - Apertura';
+      document.getElementById('email-notes').value = '';
+
+      saveData();
+      renderEmails();
+    }
+
+    function renderEmails() {
+      const tbody = document.getElementById('emails-table');
+      tbody.innerHTML = '';
+
+      const statusColor = {
+        'sent': 'badge-sent',
+        'replied': 'badge-replied',
+        'unsubscribed': 'badge-unsubscribed',
+        'bounced': 'badge-lost'
+      };
+
+      appData.emails.forEach(email => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${email.date}</td>
+          <td>${email.despacho}</td>
+          <td>${email.type}</td>
+          <td><span class="badge ${statusColor[email.status]}">${email.status}</span></td>
+          <td>${email.notes}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // FEEDBACKS
+    function addFeedback() {
+      const lead = document.getElementById('feedback-lead').value;
+      const type = document.getElementById('feedback-type').value;
+      const text = document.getElementById('feedback-text').value;
+
+      if (!lead || !text) {
+        alert('Completa lead y feedback');
+        return;
+      }
+
+      appData.feedbacks.push({
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+        lead,
+        type,
+        text
+      });
+
+      document.getElementById('feedback-lead').value = '';
+      document.getElementById('feedback-type').value = 'pain-doc';
+      document.getElementById('feedback-text').value = '';
+
+      saveData();
+      renderFeedbacks();
+    }
+
+    function renderFeedbacks() {
+      const container = document.getElementById('feedbacks-list');
+      container.innerHTML = '';
+
+      appData.feedbacks.forEach(fb => {
+        const div = document.createElement('div');
+        div.className = 'feedback-item';
+        div.innerHTML = `
+          <div class="feedback-header">
+            <strong>${fb.lead}</strong>
+            <span class="feedback-date">${fb.date}</span>
+          </div>
+          <div class="feedback-text">${fb.text}</div>
+          <div class="feedback-lead">Tipo: ${fb.type.replace('-', ' ')}</div>
+        `;
+        container.appendChild(div);
+      });
+
+      updateFeedbackMetrics();
+    }
+
+    function updateFeedbackMetrics() {
+      const pain = appData.feedbacks.filter(f => f.type.startsWith('pain')).length;
+      const objections = appData.feedbacks.filter(f => f.type === 'objecion').length;
+      const positive = appData.feedbacks.filter(f => f.type === 'interes').length;
+
+      document.getElementById('feedback-pain').textContent = pain;
+      document.getElementById('feedback-objections').textContent = objections;
+      document.getElementById('feedback-positive').textContent = positive;
+    }
+
+    // PROGRESO
+    function renderProgreso() {
+      const container = document.getElementById('progreso-content');
+      container.innerHTML = '';
+
+      Object.entries(appData.checklist).forEach(([section, items]) => {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'checklist-section';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'checklist-title';
+        titleDiv.textContent = section;
+        sectionDiv.appendChild(titleDiv);
+
+        items.forEach((item, idx) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = `checklist-item ${item.done ? 'completed' : ''}`;
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = item.done;
+          checkbox.onchange = () => {
+            item.done = checkbox.checked;
+            saveData();
+            renderProgreso();
+          };
+
+          const label = document.createElement('label');
+          label.appendChild(document.createTextNode(item.text));
+
+          itemDiv.appendChild(checkbox);
+          itemDiv.appendChild(label);
+          sectionDiv.appendChild(itemDiv);
+        });
+
+        container.appendChild(sectionDiv);
+      });
+    }
+
+    // PIPELINE
+    function renderPipeline() {
+      const newCount = appData.leads.filter(l => l.status === 'new' || l.status === 'contacted').length;
+      const trialCount = appData.leads.filter(l => l.status === 'trial').length;
+      const closedCount = appData.leads.filter(l => l.status === 'customer').length;
+
+      document.getElementById('pipeline-new').textContent = newCount;
+      document.getElementById('pipeline-trial').textContent = trialCount;
+      document.getElementById('pipeline-closed').textContent = closedCount;
+
+      const tbody = document.getElementById('pipeline-table');
+      tbody.innerHTML = '';
+
+      // Agrupar por stage
+      const stages = {
+        'trial': appData.leads.filter(l => l.status === 'trial'),
+        'new': appData.leads.filter(l => l.status === 'new' || l.status === 'contacted'),
+        'customer': appData.leads.filter(l => l.status === 'customer')
+      };
+
+      const stageNames = { 'new': 'Nuevo', 'trial': 'En Trial', 'customer': 'Cerrado' };
+      const mrrMap = { 'Agente 1': 350, 'Agente 2': 500, 'Agente 3': 250, 'Bundle': 900 };
+
+      Object.entries(stages).forEach(([stage, leads]) => {
+        leads.forEach(lead => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${lead.despacho}</td>
+            <td>${stageNames[stage]}</td>
+            <td>${stage === 'customer' ? 'Confirmado' : 'Bundle (estimado)'}</td>
+            <td>€${stage === 'customer' ? (mrrMap['Bundle']) : Math.round(mrrMap['Bundle'] * 0.2)}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    // KPIs
+    function calculateKPIs() {
+      const totalLeads = appData.leads.length;
+      const repliedLeads = appData.leads.filter(l => l.replied).length;
+      const trialLeads = appData.leads.filter(l => l.status === 'trial').length;
+      const customers = appData.leads.filter(l => l.status === 'customer').length;
+
+      const replyRate = totalLeads > 0 ? Math.round((repliedLeads / totalLeads) * 100) : 0;
+      const mrr = customers * 900; // Bundle promedio
+      const pipelineValue = (trialLeads * 900 * 0.2) + (appData.leads.filter(l => l.status === 'new' || l.status === 'contacted').length * 900 * 0.05);
+
+      return {
+        totalLeads,
+        replyRate,
+        trialLeads,
+        mrr,
+        pipelineValue: Math.round(pipelineValue),
+        cac: totalLeads > 0 ? Math.round(500 / (totalLeads / 40)) : 0
+      };
+    }
+
+    function updateAllKPIs() {
+      const kpis = calculateKPIs();
+
+      document.getElementById('kpi-leads').textContent = kpis.totalLeads;
+      document.getElementById('kpi-reply').textContent = kpis.replyRate + '%';
+      document.getElementById('kpi-trials').textContent = kpis.trialLeads;
+      document.getElementById('kpi-mrr').textContent = '€' + kpis.mrr;
+      document.getElementById('kpi-pipeline').textContent = '€' + kpis.pipelineValue;
+      document.getElementById('kpi-cac').textContent = '€' + kpis.cac;
+
+      // Progreso
+      const totalItems = Object.values(appData.checklist).reduce((sum, items) => sum + items.length, 0);
+      const doneItems = Object.values(appData.checklist).reduce((sum, items) => sum + items.filter(i => i.done).length, 0);
+      const overallPct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+
+      document.getElementById('overall-pct').textContent = overallPct + '%';
+      document.getElementById('overall-fill').style.width = overallPct + '%';
+
+      // Fases
+      const phases = [
+        appData.checklist['Semanas 1-2: Validación'],
+        appData.checklist['Semanas 3-4: Setup Adquisición'],
+        appData.checklist['Semanas 5-8: Pilotos'],
+        appData.checklist['Semanas 9-12: Scale']
+      ];
+
+      phases.forEach((items, idx) => {
+        const done = items.filter(i => i.done).length;
+        const pct = Math.round((done / items.length) * 100);
+        document.getElementById(`phase${idx + 1}-fill`).style.width = pct + '%';
+        document.getElementById(`phase${idx + 1}-pct`).textContent = pct + '%';
+      });
+
+      // Email metrics
+      const sent = appData.emails.filter(e => e.status === 'sent').length;
+      const replied = appData.emails.filter(e => e.status === 'replied').length;
+      const unsubbed = appData.emails.filter(e => e.status === 'unsubscribed').length;
+      const replyPct = sent > 0 ? Math.round((replied / sent) * 100) : 0;
+
+      document.getElementById('email-sent-count').textContent = sent;
+      document.getElementById('email-reply-count').textContent = replied;
+      document.getElementById('email-unsub-count').textContent = unsubbed;
+      document.getElementById('email-rate').textContent = replyPct + '%';
+    }
+
+    // INIT
+    (async function init() {
+      if (!checkPin()) return;
+      await loadData();
+      renderLeads();
+      updateAllKPIs();
+    })();
+  </script>
+</body>
+</html>
